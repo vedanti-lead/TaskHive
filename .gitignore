@@ -1,0 +1,15 @@
+# Node.js
+node_modules/
+.env
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+*.log
+
+# VS Code settings
+.vscode/
