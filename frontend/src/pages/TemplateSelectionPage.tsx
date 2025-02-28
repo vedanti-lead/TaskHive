@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Code, Palette, Briefcase, FlaskRound as Flask, Stethoscope, Trophy, Settings, ArrowRight, ArrowLeft, Cloud, Globe, Smartphone, Music, Paintbrush, BookOpen, TrendingUp, DollarSign, Rocket, Database, Atom, Thermometer, Pill, Microscope, Activity, Castle as Whistle, BarChart } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+import Navbar from '../components/layout/Navbar';
 
 interface Template {
   id: string;
@@ -21,6 +23,9 @@ interface Subfield {
 const TemplateSelectionPage: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedSubfield, setSelectedSubfield] = useState<Subfield | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateProfile } = useUser();
+  const navigate = useNavigate();
 
   const templates: Template[] = [
     {
@@ -212,8 +217,30 @@ const TemplateSelectionPage: React.FC = () => {
     }
   };
 
+  const handleGetStarted = async () => {
+    if (!selectedTemplate || !selectedSubfield) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Update user profile with selected template and subfield
+      await updateProfile({
+        selected_template: selectedTemplate.id,
+        selected_subfield: selectedSubfield.id
+      });
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen hexagon-grid py-24">
+      <Navbar />
       <div className="container-custom">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -355,10 +382,23 @@ const TemplateSelectionPage: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Link to="/" className="btn-primary inline-flex items-center mb-5">
-                      <span>Get Started</span>
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
+                    <button
+                      onClick={handleGetStarted}
+                      disabled={isLoading}
+                      className="btn-primary inline-flex items-center mb-5"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="animate-spin h-5 w-5 mr-2 border-t-2 border-b-2 border-white rounded-full"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <span>Get Started</span>
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </>
+                      )}
+                    </button>
                   </motion.div>
                 </div>
               </motion.div>

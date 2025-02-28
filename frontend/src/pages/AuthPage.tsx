@@ -3,23 +3,32 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Mail, Lock, User, ToggleLeft as Google } from 'lucide-react';
 import Logo from '../components/ui/Logo';
+import { useUser } from '../context/UserContext';
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signIn, user } = useUser(); // ✅ Kept signIn for authentication
   const [isSignUp, setIsSignUp] = useState(false);
-  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   useEffect(() => {
-    // Check if the URL has a signup parameter
     const params = new URLSearchParams(location.search);
     setIsSignUp(params.get('signup') === 'true');
   }, [location]);
 
+  useEffect(() => {
+    if (user) {
+      const from = location.state?.from?.pathname || '/templates';
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location.state]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would handle authentication
-    // For demo purposes, navigate to template selection
-    navigate('/templates');
+    signIn(email); // ✅ Set user before navigating
+    navigate('/templates'); // ✅ Redirect to Template Selection Page
   };
 
   return (
@@ -84,6 +93,8 @@ const AuthPage: React.FC = () => {
                     required
                     className="input pl-10"
                     placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -103,6 +114,8 @@ const AuthPage: React.FC = () => {
                     required
                     className="input pl-10"
                     placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>
